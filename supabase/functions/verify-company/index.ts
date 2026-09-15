@@ -1,11 +1,10 @@
-// Checks whether a company name is a real, findable company, using Google's
-// Custom Search API. It looks specifically for a linkedin.com/company page
-// (the strongest signal) and otherwise falls back to a general web presence.
+// Checks whether a company name is a real, findable company, by searching
+// LinkedIn's company pages using Google's Custom Search API.
 //
 // Needs two secrets set on the Supabase project:
 //   GOOGLE_SEARCH_API_KEY  -- an API key with the "Custom Search API" enabled
 //   GOOGLE_SEARCH_CX       -- the "Search engine ID" of a Programmable Search
-//                             Engine configured to search the entire web
+//                             Engine restricted to "linkedin.com/company/*"
 import { corsHeaders, jsonResponse } from '../_shared/cors.ts'
 
 interface SearchItem {
@@ -49,22 +48,14 @@ Deno.serve(async (req) => {
       )
     }
 
-    const linkedinResults = await googleSearch(`"${companyName}" site:linkedin.com/company`, apiKey, cx)
-    const linkedinMatch = linkedinResults.find((item) => item.link?.includes('linkedin.com/company'))
-
-    let generalResults: SearchItem[] = []
-    if (!linkedinMatch) {
-      generalResults = await googleSearch(`"${companyName}" company`, apiKey, cx)
-    }
-
-    const found = Boolean(linkedinMatch) || generalResults.length > 0
-    const best = linkedinMatch ?? generalResults[0]
+    const results = await googleSearch(`"${companyName}"`, apiKey, cx)
+    const linkedinMatch = results.find((item) => item.link?.includes('linkedin.com/company'))
 
     return jsonResponse({
-      found,
+      found: Boolean(linkedinMatch),
       linkedinUrl: linkedinMatch?.link ?? null,
-      website: !linkedinMatch ? best?.link ?? null : null,
-      snippet: best?.snippet ?? null,
+      website: null,
+      snippet: linkedinMatch?.snippet ?? null,
     })
   } catch (err) {
     return jsonResponse({ error: err instanceof Error ? err.message : 'Unknown error' }, 500)
