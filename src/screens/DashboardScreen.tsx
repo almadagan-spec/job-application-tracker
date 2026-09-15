@@ -7,6 +7,7 @@ import {
   renameCompanyRow,
   runVerificationAndGeneration,
   updateDesiredRole,
+  updateNotes,
   updateStatus,
   uploadResume,
 } from '../lib/api'
@@ -127,6 +128,14 @@ export default function DashboardScreen() {
     await updateStatus(applicationId, status)
   }
 
+  function handleNotesEdit(applicationId: string, notes: string) {
+    setApplications((prev) => prev.map((a) => (a.id === applicationId ? { ...a, notes } : a)))
+  }
+
+  async function handleNotesSave(applicationId: string, notes: string) {
+    await updateNotes(applicationId, notes)
+  }
+
   if (loading) {
     return <div className="jat-page-center">Loading…</div>
   }
@@ -189,13 +198,14 @@ export default function DashboardScreen() {
               <th>About</th>
               <th>New resume</th>
               <th>Cover letter</th>
+              <th>Notes</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody>
             {applications.length === 0 && (
               <tr>
-                <td colSpan={5} className="jat-empty-row">
+                <td colSpan={6} className="jat-empty-row">
                   No companies yet — click "+ Add a company" to get started.
                 </td>
               </tr>
@@ -267,6 +277,15 @@ export default function DashboardScreen() {
                         Download
                       </button>
                     )}
+                  </td>
+                  <td>
+                    <textarea
+                      className="jat-notes-input"
+                      value={app.notes ?? ''}
+                      placeholder="Add a note…"
+                      onChange={(e) => handleNotesEdit(app.id, e.target.value)}
+                      onBlur={(e) => handleNotesSave(app.id, e.target.value)}
+                    />
                   </td>
                   <td>
                     <StatusDropdown

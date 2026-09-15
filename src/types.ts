@@ -33,6 +33,7 @@ export interface Application {
   about: string | null
   new_resume: string | null
   cover_letter: string | null
+  notes: string | null
   status: ApplicationStatus
   created_at: string
 }

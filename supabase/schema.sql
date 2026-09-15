@@ -49,6 +49,7 @@ create table public.applications (
   about text,
   new_resume text,
   cover_letter text,
+  notes text,
   status text not null default 'received'
     check (status in ('received', 'under_review', 'denied', 'interview')),
   created_at timestamptz not null default now()

@@ -151,3 +151,9 @@ export async function updateStatus(applicationId: string, status: ApplicationSta
   const { error } = await sb.from('applications').update({ status }).eq('id', applicationId)
   if (error) throw error
 }
+
+export async function updateNotes(applicationId: string, notes: string): Promise<void> {
+  const sb = requireClient()
+  const { error } = await sb.from('applications').update({ notes }).eq('id', applicationId)
+  if (error) throw error
+}
