@@ -1,0 +1,75 @@
+:root {
+  color-scheme: light;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --bg: #f5f6fa;
+  --panel: #ffffff;
+  --border: #e2e5ec;
+  --text: #1f2430;
+  --muted: #6b7280;
+  --primary: #2f6fed;
+  --primary-dark: #1f52c0;
+  --danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+.jat-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--primary);
+  color: white;
+  transition: background 0.15s ease;
+}
+
+.jat-btn:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.jat-btn:disabled {
+  background: #c7cad4;
+  cursor: not-allowed;
+}
+
+.jat-btn-secondary {
+  background: white;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.jat-btn-secondary:hover:not(:disabled) {
+  background: #f0f1f5;
+}
+
+.jat-error {
+  color: var(--danger);
+  font-size: 13px;
+  margin: 4px 0 0;
+}

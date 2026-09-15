@@ -1,0 +1,58 @@
+.jat-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 18, 30, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 100;
+}
+
+.jat-modal {
+  background: var(--panel);
+  border-radius: 14px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 50px rgba(20, 24, 40, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.jat-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.jat-modal-header h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.jat-modal-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--muted);
+  padding: 0;
+}
+
+.jat-modal textarea,
+.jat-modal input[type='text'] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  resize: vertical;
+}
+
+.jat-modal textarea:focus,
+.jat-modal input[type='text']:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}

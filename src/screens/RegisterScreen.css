@@ -1,0 +1,118 @@
+.jat-auth-page {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.jat-auth-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 32px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 10px 30px rgba(20, 24, 40, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.jat-auth-card h1 {
+  font-size: 22px;
+  margin: 0;
+}
+
+.jat-auth-subtitle {
+  margin: -8px 0 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.jat-config-warning {
+  background: #fff7e6;
+  border: 1px solid #f5c518;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #7a5a00;
+  margin: 0 0 4px;
+}
+
+.jat-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.jat-field input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.jat-field input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.jat-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.jat-checkbox-row input {
+  width: 16px;
+  height: 16px;
+}
+
+.jat-auth-submit {
+  margin-top: 8px;
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+}
+
+.jat-code-boxes {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.jat-code-boxes input {
+  width: 40px;
+  height: 48px;
+  text-align: center;
+  font-size: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.jat-code-boxes input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.jat-link-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0;
+  align-self: center;
+}
+
+.jat-link-btn:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
