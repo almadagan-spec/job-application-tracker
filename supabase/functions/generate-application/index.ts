@@ -1,7 +1,7 @@
-// Writes the company summary, a tailored version of the user's resume, and a
-// cover letter -- using Claude. Doesn't invent anything: it's told to only
-// re-emphasize and reorder facts already present in the user's real resume,
-// never to add new claims or qualifications.
+// Writes a tailored version of the user's resume and a cover letter -- using
+// Claude. Doesn't invent anything: it's told to only re-emphasize and
+// reorder facts already present in the user's real resume, never to add new
+// claims or qualifications.
 //
 // Needs one secret set on the Supabase project: ANTHROPIC_API_KEY
 const corsHeaders = {
@@ -22,8 +22,7 @@ interface RequestBody {
   companyName: string
   desiredRole: string
   resumeText: string
-  website?: string
-  linkedinUrl?: string
+  about?: string
 }
 
 async function callClaude(apiKey: string, system: string, user: string): Promise<string> {
@@ -57,7 +56,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = (await req.json()) as RequestBody
-    const { companyName, desiredRole, resumeText, website, linkedinUrl } = body
+    const { companyName, desiredRole, resumeText, about } = body
     if (!companyName) {
       return jsonResponse({ error: 'companyName is required' }, 400)
     }
@@ -66,12 +65,6 @@ Deno.serve(async (req) => {
     if (!apiKey) {
       return jsonResponse({ error: 'AI writing is not configured yet (missing Anthropic API key).' }, 500)
     }
-
-    const about = await callClaude(
-      apiKey,
-      'You write short, factual company summaries for a job seeker’s tracking table. Two to three sentences, plain text, no markdown, no preamble.',
-      `Company: ${companyName}${website ? `\nWebsite: ${website}` : ''}${linkedinUrl ? `\nLinkedIn: ${linkedinUrl}` : ''}\n\nWrite a short "what does this company do" summary based on what you know about it.`,
-    )
 
     const resumeAndCoverSystem = `You help a real job seeker tailor their real resume and write a cover letter for a specific company and role.
 Absolute rules:
@@ -82,7 +75,7 @@ Absolute rules:
 
     const userMessage = `Candidate's desired role: ${desiredRole || 'not specified'}
 Company they're applying to: ${companyName}
-${website ? `Company website: ${website}\n` : ''}${linkedinUrl ? `Company LinkedIn: ${linkedinUrl}\n` : ''}
+${about ? `About the company: ${about}\n` : ''}
 Candidate's current resume (verbatim):
 """
 ${resumeText || '(no resume text available)'}
@@ -96,7 +89,6 @@ Produce two things, each separated by the exact line "=====":
     const [newResume, coverLetter] = combined.split('=====').map((s) => s.trim())
 
     return jsonResponse({
-      about: about.trim(),
       newResume: newResume || combined.trim(),
       coverLetter: coverLetter || '',
     })

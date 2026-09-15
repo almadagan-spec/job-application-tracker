@@ -60,7 +60,7 @@ export async function uploadResume(userId: string, file: File): Promise<Profile>
 }
 
 // Adds the new row immediately (so the UI can show it right away); the
-// actual Google/LinkedIn check and AI writing happen afterwards, in
+// actual company check and AI writing happen afterwards, in
 // runVerificationAndGeneration, so the table doesn't freeze while that runs.
 export async function insertCompanyRow(userId: string, companyName: string): Promise<Application> {
   const sb = requireClient()
@@ -99,6 +99,7 @@ export async function runVerificationAndGeneration(
   if (verifyError) throw verifyError
 
   const found = Boolean((verifyData as { found?: boolean })?.found)
+  const about = (verifyData as { about?: string })?.about ?? ''
 
   if (!found) {
     const { data, error } = await sb
@@ -114,28 +115,24 @@ export async function runVerificationAndGeneration(
     return data
   }
 
-  const website = (verifyData as { website?: string })?.website ?? ''
-  const linkedinUrl = (verifyData as { linkedinUrl?: string })?.linkedinUrl ?? ''
-
   const { data: genData, error: genError } = await sb.functions.invoke('generate-application', {
     body: {
       companyName: application.company_name,
       desiredRole: desiredRole ?? '',
       resumeText: resumeText ?? '',
-      website,
-      linkedinUrl,
+      about,
     },
   })
   if (genError) throw genError
 
-  const gen = genData as { about?: string; newResume?: string; coverLetter?: string }
+  const gen = genData as { newResume?: string; coverLetter?: string }
 
   const { data, error } = await sb
     .from('applications')
     .update({
       linkedin_verified: true,
       verification_note: null,
-      about: gen.about ?? '',
+      about,
       new_resume: gen.newResume ?? '',
       cover_letter: gen.coverLetter ?? '',
     })

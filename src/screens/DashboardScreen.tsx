@@ -233,7 +233,7 @@ export default function DashboardScreen() {
                         <div className={failed ? 'jat-cell-failed-headline' : 'jat-company-name'}>
                           {app.company_name}
                         </div>
-                        {verifying && <div className="jat-toolbar-note">Checking Google & LinkedIn…</div>}
+                        {verifying && <div className="jat-toolbar-note">Checking company…</div>}
                         {failed && (
                           <>
                             <div className="jat-cell-failed-message">{app.verification_note}</div>

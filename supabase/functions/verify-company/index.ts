@@ -1,10 +1,9 @@
-// Checks whether a company name is a real, findable company, by searching
-// LinkedIn's company pages using Google's Custom Search API.
+// Checks whether a company name refers to a real, existing company, using
+// Claude's own knowledge (no external search service, no separate account
+// or billing needed beyond the Anthropic key already used elsewhere).
+// If real, also writes the short "about" summary in the same call.
 //
-// Needs two secrets set on the Supabase project:
-//   GOOGLE_SEARCH_API_KEY  -- an API key with the "Custom Search API" enabled
-//   GOOGLE_SEARCH_CX       -- the "Search engine ID" of a Programmable Search
-//                             Engine restricted to "linkedin.com/company/*"
+// Needs one secret set on the Supabase project: ANTHROPIC_API_KEY
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -17,26 +16,7 @@ function jsonResponse(body: unknown, status = 200) {
   })
 }
 
-interface SearchItem {
-  title?: string
-  link?: string
-  snippet?: string
-}
-
-async function googleSearch(query: string, apiKey: string, cx: string): Promise<SearchItem[]> {
-  const url = new URL('https://www.googleapis.com/customsearch/v1')
-  url.searchParams.set('key', apiKey)
-  url.searchParams.set('cx', cx)
-  url.searchParams.set('q', query)
-  url.searchParams.set('num', '5')
-
-  const res = await fetch(url)
-  if (!res.ok) {
-    throw new Error(`Google search failed (${res.status})`)
-  }
-  const data = await res.json()
-  return (data.items ?? []) as SearchItem[]
-}
+const MODEL = 'claude-sonnet-5'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -49,23 +29,49 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'companyName is required' }, 400)
     }
 
-    const apiKey = Deno.env.get('GOOGLE_SEARCH_API_KEY')
-    const cx = Deno.env.get('GOOGLE_SEARCH_CX')
-    if (!apiKey || !cx) {
+    const apiKey = Deno.env.get('ANTHROPIC_API_KEY')
+    if (!apiKey) {
       return jsonResponse(
-        { error: 'Company search is not configured yet (missing Google Search API key).' },
+        { error: 'Company check is not configured yet (missing Anthropic API key).' },
         500,
       )
     }
 
-    const results = await googleSearch(`"${companyName}"`, apiKey, cx)
-    const linkedinMatch = results.find((item) => item.link?.includes('linkedin.com/company'))
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 500,
+        system:
+          'You judge whether a name refers to a real, existing company (of any size, including startups) based on your knowledge. ' +
+          'Reply with ONLY a JSON object, no other text: {"found": true or false, "about": "two-sentence plain-text summary of what the company does, or empty string if not found"}.',
+        messages: [{ role: 'user', content: `Company name: "${companyName}"` }],
+      }),
+    })
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`Claude API failed (${res.status}): ${text.slice(0, 300)}`)
+    }
+    const data = await res.json()
+    const block = data.content?.[0]
+    const raw = block?.type === 'text' ? block.text : '{}'
+
+    let parsed: { found?: boolean; about?: string } = {}
+    try {
+      const jsonMatch = raw.match(/\{[\s\S]*\}/)
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw)
+    } catch {
+      parsed = { found: false, about: '' }
+    }
 
     return jsonResponse({
-      found: Boolean(linkedinMatch),
-      linkedinUrl: linkedinMatch?.link ?? null,
-      website: null,
-      snippet: linkedinMatch?.snippet ?? null,
+      found: Boolean(parsed.found),
+      about: parsed.about ?? '',
     })
   } catch (err) {
     return jsonResponse({ error: err instanceof Error ? err.message : 'Unknown error' }, 500)

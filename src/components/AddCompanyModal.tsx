@@ -31,8 +31,8 @@ export default function AddCompanyModal({ onClose, onAdd }: AddCompanyModalProps
   return (
     <Modal title="Add a company" onClose={onClose}>
       <p style={{ margin: 0, fontSize: 13, color: 'var(--muted)' }}>
-        Type the company's name. We'll check that it's a real company on Google and
-        LinkedIn before adding it to your table.
+        Type the company's name. We'll check that it's a real company before adding
+        it to your table.
       </p>
       <input
         type="text"
