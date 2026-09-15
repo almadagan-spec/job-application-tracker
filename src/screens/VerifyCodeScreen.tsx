@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
 import './RegisterScreen.css'
 
-const CODE_LENGTH = 6
+const CODE_LENGTH = 8
 
 export default function VerifyCodeScreen() {
   const { verifyCode, pendingEmail, sendCode } = useAuth()
@@ -39,7 +39,7 @@ export default function VerifyCodeScreen() {
   async function handleSubmit() {
     const code = digits.join('')
     if (code.length !== CODE_LENGTH) {
-      setError('Please enter the full 6-digit code.')
+      setError(`Please enter the full ${CODE_LENGTH}-digit code.`)
       return
     }
     setError(null)
@@ -70,7 +70,7 @@ export default function VerifyCodeScreen() {
       <div className="jat-auth-card">
         <h1>Check your email</h1>
         <p className="jat-auth-subtitle">
-          We sent a 6-digit code to <strong>{pendingEmail}</strong>. Enter it below.
+          We sent an {CODE_LENGTH}-digit code to <strong>{pendingEmail}</strong>. Enter it below.
         </p>
 
         <div className="jat-code-boxes">

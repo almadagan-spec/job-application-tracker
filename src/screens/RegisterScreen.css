@@ -84,15 +84,16 @@
 
 .jat-code-boxes {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .jat-code-boxes input {
-  width: 40px;
-  height: 48px;
+  width: 32px;
+  height: 44px;
   text-align: center;
-  font-size: 20px;
+  font-size: 18px;
   border-radius: 8px;
   border: 1px solid var(--border);
 }
