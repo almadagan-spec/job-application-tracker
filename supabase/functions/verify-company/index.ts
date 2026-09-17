@@ -47,6 +47,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 500,
+        thinking: { type: 'disabled' },
         system:
           'You judge whether a name refers to a real, existing company (of any size, including startups) based on your knowledge. ' +
           'Reply with ONLY a JSON object, no other text: {"found": true or false, "about": "two-sentence plain-text summary of what the company does, or empty string if not found"}.',
@@ -58,8 +59,8 @@ Deno.serve(async (req) => {
       throw new Error(`Claude API failed (${res.status}): ${text.slice(0, 300)}`)
     }
     const data = await res.json()
-    const block = data.content?.[0]
-    const raw = block?.type === 'text' ? block.text : '{}'
+    const textBlock = data.content?.find((b: { type: string }) => b.type === 'text')
+    const raw = textBlock?.text ?? '{}'
 
     let parsed: { found?: boolean; about?: string } = {}
     try {

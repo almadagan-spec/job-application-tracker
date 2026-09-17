@@ -35,7 +35,8 @@ async function callClaude(apiKey: string, system: string, user: string): Promise
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 3000,
+      max_tokens: 4000,
+      thinking: { type: 'disabled' },
       system,
       messages: [{ role: 'user', content: user }],
     }),
@@ -45,8 +46,8 @@ async function callClaude(apiKey: string, system: string, user: string): Promise
     throw new Error(`Claude API failed (${res.status}): ${text.slice(0, 300)}`)
   }
   const data = await res.json()
-  const block = data.content?.[0]
-  return block?.type === 'text' ? block.text : ''
+  const textBlock = data.content?.find((b: { type: string }) => b.type === 'text')
+  return textBlock?.text ?? ''
 }
 
 Deno.serve(async (req) => {

@@ -44,6 +44,7 @@ async function extractFromPdf(bytes: Uint8Array): Promise<string> {
     body: JSON.stringify({
       model: MODEL,
       max_tokens: 4000,
+      thinking: { type: 'disabled' },
       messages: [
         {
           role: 'user',
@@ -63,8 +64,8 @@ async function extractFromPdf(bytes: Uint8Array): Promise<string> {
     throw new Error(`Claude API failed (${res.status}): ${text.slice(0, 300)}`)
   }
   const data = await res.json()
-  const block = data.content?.[0]
-  return block?.type === 'text' ? block.text : ''
+  const textBlock = data.content?.find((b: { type: string }) => b.type === 'text')
+  return textBlock?.text ?? ''
 }
 
 Deno.serve(async (req) => {
