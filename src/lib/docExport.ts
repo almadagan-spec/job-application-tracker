@@ -2,7 +2,6 @@ import {
   AlignmentType,
   BorderStyle,
   Document,
-  HeadingLevel,
   Packer,
   Paragraph,
   Table,
@@ -12,7 +11,9 @@ import {
   WidthType,
 } from 'docx'
 
+const FONT = 'Calibri'
 const ACCENT = '2F6FED'
+const TEXT_COLOR = '1F2430'
 const SIDEBAR_BG = 'F2F4F8'
 const NO_BORDER = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }
 const NO_BORDERS = {
@@ -27,32 +28,56 @@ const NO_BORDERS = {
 // Fixed widths in twips (1/1440 inch), not percentages -- some Word
 // readers (Pages included) mis-render percentage-width table columns as
 // nearly zero width, wrapping every line one letter at a time.
-const PAGE_MARGIN = 720 // 0.5in
+const PAGE_MARGIN = 620 // ~0.43in -- tight but still printable
 const PAGE_WIDTH = 12240 // US Letter
 const CONTENT_WIDTH = PAGE_WIDTH - PAGE_MARGIN * 2
 const SIDEBAR_WIDTH = Math.round(CONTENT_WIDTH * 0.33)
 const MAIN_WIDTH = CONTENT_WIDTH - SIDEBAR_WIDTH
 
-// Turns "## Section" / "- bullet" style plain text into real Word headings
-// and bullet points.
+// A size scale that keeps real proportions -- name is clearly biggest,
+// section headers next, entry titles smaller still, body text smallest --
+// while staying tight enough for a one-page resume. Sizes are in half-points.
+const SIZE = { name: 30, roleUnderName: 18, sectionHeader: 21, entryTitle: 18, body: 17 }
+
+function docStyles() {
+  return {
+    default: {
+      document: { run: { font: FONT, size: SIZE.body, color: TEXT_COLOR } },
+    },
+  }
+}
+
+// Turns "## Section" / "### Entry" / "- bullet" style plain text into real
+// Word paragraphs, keeping the original's blue section headers and the
+// relative size differences between a section header, an entry title
+// (a job/degree), and body text.
 function renderLine(line: string): Paragraph {
   if (line.startsWith('## ')) {
     return new Paragraph({
-      text: line.slice(3).trim(),
-      heading: HeadingLevel.HEADING_2,
-      spacing: { before: 240, after: 80 },
+      spacing: { before: 140, after: 40 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'D5DBE8', space: 2 } },
+      children: [
+        new TextRun({ text: line.slice(3).trim(), bold: true, size: SIZE.sectionHeader, color: ACCENT, font: FONT }),
+      ],
     })
   }
   if (line.startsWith('### ')) {
     return new Paragraph({
-      children: [new TextRun({ text: line.slice(4).trim(), bold: true })],
-      spacing: { before: 140, after: 20 },
+      spacing: { before: 90, after: 10 },
+      children: [new TextRun({ text: line.slice(4).trim(), bold: true, size: SIZE.entryTitle, color: TEXT_COLOR, font: FONT })],
     })
   }
   if (line.startsWith('- ') || line.startsWith('• ')) {
-    return new Paragraph({ text: line.slice(2).trim(), bullet: { level: 0 }, spacing: { after: 40 } })
+    return new Paragraph({
+      bullet: { level: 0 },
+      spacing: { after: 10 },
+      children: [new TextRun({ text: line.slice(2).trim(), size: SIZE.body, color: TEXT_COLOR, font: FONT })],
+    })
   }
-  return new Paragraph({ text: line, spacing: { after: 40 } })
+  return new Paragraph({
+    spacing: { after: 20 },
+    children: [new TextRun({ text: line, size: SIZE.body, color: TEXT_COLOR, font: FONT })],
+  })
 }
 
 // Turns AI-written prose into a plain downloadable .docx file (used for the
@@ -63,12 +88,23 @@ export async function downloadAsWord(title: string, text: string, fileName: stri
     .split(/\n{2,}/)
     .map((block) => block.trim())
     .filter(Boolean)
-    .flatMap((block) => block.split('\n').map((line) => new Paragraph(line)))
+    .flatMap((block) =>
+      block
+        .split('\n')
+        .map((line) => new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: line, size: SIZE.body, font: FONT })] })),
+    )
 
   const doc = new Document({
+    styles: docStyles(),
     sections: [
       {
-        children: [new Paragraph({ text: title, heading: HeadingLevel.HEADING_1, spacing: { after: 160 } }), ...paragraphs],
+        children: [
+          new Paragraph({
+            spacing: { after: 200 },
+            children: [new TextRun({ text: title, bold: true, size: SIZE.sectionHeader, color: ACCENT, font: FONT })],
+          }),
+          ...paragraphs,
+        ],
       },
     ],
   })
@@ -136,17 +172,17 @@ export async function downloadResumeAsWord(text: string, fileName: string) {
               new TableCell({
                 width: { size: CONTENT_WIDTH, type: WidthType.DXA },
                 shading: { fill: ACCENT },
-                margins: { top: 240, bottom: 240, left: 240, right: 240 },
+                margins: { top: 160, bottom: 160, left: 200, right: 200 },
                 children: [
                   new Paragraph({
                     alignment: AlignmentType.LEFT,
-                    children: [new TextRun({ text: parsed.name, bold: true, size: 36, color: 'FFFFFF' })],
+                    children: [new TextRun({ text: parsed.name, bold: true, size: SIZE.name, color: 'FFFFFF', font: FONT })],
                   }),
                   ...(parsed.title
                     ? [
                         new Paragraph({
                           alignment: AlignmentType.LEFT,
-                          children: [new TextRun({ text: parsed.title, size: 22, color: 'FFFFFF' })],
+                          children: [new TextRun({ text: parsed.title, size: SIZE.roleUnderName, color: 'FFFFFF', font: FONT })],
                         }),
                       ]
                     : []),
@@ -156,7 +192,7 @@ export async function downloadResumeAsWord(text: string, fileName: string) {
           }),
         ],
       }),
-      new Paragraph({ text: '', spacing: { after: 120 } }),
+      new Paragraph({ text: '', spacing: { after: 60 } }),
     )
   }
 
@@ -172,12 +208,12 @@ export async function downloadResumeAsWord(text: string, fileName: string) {
               new TableCell({
                 width: { size: SIDEBAR_WIDTH, type: WidthType.DXA },
                 shading: { fill: SIDEBAR_BG },
-                margins: { top: 200, bottom: 200, left: 200, right: 200 },
+                margins: { top: 140, bottom: 140, left: 160, right: 160 },
                 children: parsed.sidebar.map(renderLine),
               }),
               new TableCell({
                 width: { size: MAIN_WIDTH, type: WidthType.DXA },
-                margins: { top: 200, bottom: 200, left: 240, right: 120 },
+                margins: { top: 140, bottom: 140, left: 180, right: 100 },
                 children: parsed.main.map(renderLine),
               }),
             ],
@@ -193,6 +229,7 @@ export async function downloadResumeAsWord(text: string, fileName: string) {
   }
 
   const doc = new Document({
+    styles: docStyles(),
     sections: [
       {
         properties: {
