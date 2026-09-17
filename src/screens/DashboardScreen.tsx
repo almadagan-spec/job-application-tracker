@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../AuthContext'
 import {
+  deleteApplication,
   fetchApplications,
   fetchProfile,
   insertCompanyRow,
+  needsVerification,
   renameCompanyRow,
   runVerificationAndGeneration,
   updateDesiredRole,
@@ -42,6 +44,10 @@ export default function DashboardScreen() {
       .then(([p, apps]) => {
         setProfile(p)
         setApplications(apps)
+        // Rows that never got a result (e.g. the page closed mid-check) retry themselves here.
+        apps.filter(needsVerification).forEach((app) => {
+          startVerification(app, p?.desired_role ?? null, p?.resume_text ?? null)
+        })
       })
       .catch((err) => setLoadError(err instanceof Error ? err.message : 'Could not load your data.'))
       .finally(() => setLoading(false))
@@ -54,6 +60,24 @@ export default function DashboardScreen() {
       else next.delete(id)
       return next
     })
+  }
+
+  function startVerification(app: Application, desiredRole: string | null, resumeText: string | null) {
+    markVerifying(app.id, true)
+    runVerificationAndGeneration(app, desiredRole, resumeText)
+      .then((updated) => {
+        setApplications((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
+      })
+      .catch((err) => {
+        setApplications((prev) =>
+          prev.map((a) =>
+            a.id === app.id
+              ? { ...a, verification_note: err instanceof Error ? err.message : 'Something went wrong.' }
+              : a,
+          ),
+        )
+      })
+      .finally(() => markVerifying(app.id, false))
   }
 
   async function handleUploadClick() {
@@ -82,23 +106,15 @@ export default function DashboardScreen() {
 
   async function handleAddCompany(companyName: string) {
     if (!user) return
+    const alreadyAdded = applications.some(
+      (a) => a.company_name.trim().toLowerCase() === companyName.trim().toLowerCase(),
+    )
+    if (alreadyAdded) {
+      throw new Error("You've already added that company.")
+    }
     const row = await insertCompanyRow(user.id, companyName)
     setApplications((prev) => [row, ...prev])
-    markVerifying(row.id, true)
-    runVerificationAndGeneration(row, profile?.desired_role ?? null, profile?.resume_text ?? null)
-      .then((updated) => {
-        setApplications((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
-      })
-      .catch((err) => {
-        setApplications((prev) =>
-          prev.map((a) =>
-            a.id === row.id
-              ? { ...a, verification_note: err instanceof Error ? err.message : 'Something went wrong.' }
-              : a,
-          ),
-        )
-      })
-      .finally(() => markVerifying(row.id, false))
+    startVerification(row, profile?.desired_role ?? null, profile?.resume_text ?? null)
   }
 
   async function handleRetry(application: Application) {
@@ -106,21 +122,13 @@ export default function DashboardScreen() {
     const renamed = await renameCompanyRow(application, editingName.trim())
     setApplications((prev) => prev.map((a) => (a.id === renamed.id ? renamed : a)))
     setEditingId(null)
-    markVerifying(renamed.id, true)
-    runVerificationAndGeneration(renamed, profile?.desired_role ?? null, profile?.resume_text ?? null)
-      .then((updated) => {
-        setApplications((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
-      })
-      .catch((err) => {
-        setApplications((prev) =>
-          prev.map((a) =>
-            a.id === renamed.id
-              ? { ...a, verification_note: err instanceof Error ? err.message : 'Something went wrong.' }
-              : a,
-          ),
-        )
-      })
-      .finally(() => markVerifying(renamed.id, false))
+    startVerification(renamed, profile?.desired_role ?? null, profile?.resume_text ?? null)
+  }
+
+  async function handleDelete(applicationId: string) {
+    if (!window.confirm('Remove this company from your list?')) return
+    await deleteApplication(applicationId)
+    setApplications((prev) => prev.filter((a) => a.id !== applicationId))
   }
 
   async function handleStatusChange(applicationId: string, status: ApplicationStatus) {
@@ -200,12 +208,13 @@ export default function DashboardScreen() {
               <th>Cover letter</th>
               <th>Notes</th>
               <th>Status</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             {applications.length === 0 && (
               <tr>
-                <td colSpan={6} className="jat-empty-row">
+                <td colSpan={7} className="jat-empty-row">
                   No companies yet — click "+ Add a company" to get started.
                 </td>
               </tr>
@@ -293,6 +302,16 @@ export default function DashboardScreen() {
                       disabled={!app.linkedin_verified}
                       onChange={(status) => handleStatusChange(app.id, status)}
                     />
+                  </td>
+                  <td>
+                    <button
+                      className="jat-delete-btn"
+                      onClick={() => handleDelete(app.id)}
+                      aria-label={`Remove ${app.company_name}`}
+                      title="Remove"
+                    >
+                      🗑
+                    </button>
                   </td>
                 </tr>
               )

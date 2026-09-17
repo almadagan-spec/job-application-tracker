@@ -154,3 +154,15 @@ export async function updateNotes(applicationId: string, notes: string): Promise
   const { error } = await sb.from('applications').update({ notes }).eq('id', applicationId)
   if (error) throw error
 }
+
+export async function deleteApplication(applicationId: string): Promise<void> {
+  const sb = requireClient()
+  const { error } = await sb.from('applications').delete().eq('id', applicationId)
+  if (error) throw error
+}
+
+// A row that was added but never got a result -- e.g. the page was closed or
+// refreshed while the check was still running, and nothing ever wrote back.
+export function needsVerification(app: Application): boolean {
+  return !app.linkedin_verified && !app.verification_note && !app.about && !app.new_resume && !app.cover_letter
+}

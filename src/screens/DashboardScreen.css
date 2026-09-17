@@ -150,3 +150,17 @@
   outline: 2px solid var(--primary);
   outline-offset: 1px;
 }
+
+.jat-delete-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 6px;
+  opacity: 0.6;
+}
+
+.jat-delete-btn:hover {
+  opacity: 1;
+  background: #fdecec;
+}
