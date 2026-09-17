@@ -35,9 +35,10 @@ const SIDEBAR_WIDTH = Math.round(CONTENT_WIDTH * 0.33)
 const MAIN_WIDTH = CONTENT_WIDTH - SIDEBAR_WIDTH
 
 // A size scale that keeps real proportions -- name is clearly biggest,
-// section headers next, entry titles smaller still, body text smallest --
-// while staying tight enough for a one-page resume. Sizes are in half-points.
-const SIZE = { name: 30, roleUnderName: 18, sectionHeader: 21, entryTitle: 18, body: 17 }
+// section headers next (a real step up from body text), entry titles
+// smaller still, body text smallest -- while staying tight enough for a
+// one-page resume. Sizes are in half-points.
+const SIZE = { name: 30, roleUnderName: 17, sectionHeader: 23, entryTitle: 18, body: 16 }
 
 function docStyles() {
   return {
@@ -54,7 +55,7 @@ function docStyles() {
 function renderLine(line: string): Paragraph {
   if (line.startsWith('## ')) {
     return new Paragraph({
-      spacing: { before: 140, after: 40 },
+      spacing: { before: 220, after: 80 },
       border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'D5DBE8', space: 2 } },
       children: [
         new TextRun({ text: line.slice(3).trim(), bold: true, size: SIZE.sectionHeader, color: ACCENT, font: FONT }),
@@ -63,19 +64,19 @@ function renderLine(line: string): Paragraph {
   }
   if (line.startsWith('### ')) {
     return new Paragraph({
-      spacing: { before: 90, after: 10 },
+      spacing: { before: 140, after: 30 },
       children: [new TextRun({ text: line.slice(4).trim(), bold: true, size: SIZE.entryTitle, color: TEXT_COLOR, font: FONT })],
     })
   }
   if (line.startsWith('- ') || line.startsWith('• ')) {
     return new Paragraph({
       bullet: { level: 0 },
-      spacing: { after: 10 },
+      spacing: { after: 40 },
       children: [new TextRun({ text: line.slice(2).trim(), size: SIZE.body, color: TEXT_COLOR, font: FONT })],
     })
   }
   return new Paragraph({
-    spacing: { after: 20 },
+    spacing: { after: 50 },
     children: [new TextRun({ text: line, size: SIZE.body, color: TEXT_COLOR, font: FONT })],
   })
 }

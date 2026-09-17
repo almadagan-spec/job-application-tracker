@@ -83,12 +83,32 @@ Resume output format -- this exact lightweight markup, so it can be rendered as 
 <the narrative sections, e.g. a short profile/summary and the work experience>
 
 Within the SIDEBAR and MAIN parts, keep the SAME section names and order as the candidate's original resume, using:
-- "## " for a section header (e.g. "## Education")
+- "## " for EVERY section header, with no exceptions -- every single section in both SIDEBAR and MAIN (Personal details, Education, Technical skills, Product skills, Profile, Employment, or whatever the original calls them) must start its line with "## ". A section header line must never appear without this prefix.
 - "### " for an entry title within a section, e.g. a degree or job title (put its dates on the same line if the original does)
 - a plain line right after an entry title for the institution/employer name
 - "- " for each bullet point of detail under an entry
 - plain lines for anything else (e.g. a contact detail, a skills list)
 Do not use any other markdown (no asterisks, no numbered lists).
+
+Worked example of the exact format (yours will have different content, but match this shape):
+%%NAME%% Jane Doe
+%%TITLE%% Product Manager
+%%SIDEBAR%%
+## Personal details
+Jane Doe
+jane@example.com
+## Education
+### BA Computer Science, 2018 - 2021
+Some University
+- Graduated with honors
+%%MAIN%%
+## Profile
+Product manager with 3 years of experience...
+## Employment
+### Product Manager, 2021 - 2024
+Acme Corp
+- Led a team of 5 engineers
+- Shipped feature X, increasing retention 20%
 
 Cover letter formatting:
 - First line: "Hello," on its own.
