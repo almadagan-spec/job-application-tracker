@@ -345,7 +345,11 @@ export default function DashboardScreen() {
 }
 
 function truncate(text: string, max = 120): string {
-  const clean = text.trim()
+  const clean = text
+    .split('\n')
+    .map((line) => line.trim().replace(/^##\s+/, '').replace(/^[-•]\s+/, '• '))
+    .join(' ')
+    .trim()
   return clean.length > max ? `${clean.slice(0, max)}…` : clean
 }
 

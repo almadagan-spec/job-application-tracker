@@ -72,18 +72,25 @@ Absolute rules:
 - Never invent facts, employers, dates, degrees, or skills that are not already in the resume text you're given.
 - You may reorder, re-emphasize, and rephrase existing true details to highlight what's most relevant to this company and role (e.g. move a relevant school or project higher, emphasize a relevant skill).
 - Keep it truthful and natural, in the candidate's voice.
-- Output plain text only, no markdown formatting, no headings with #, no asterisks.`
+
+Resume formatting -- keep the SAME section structure as the candidate's original resume (same section names, same order, e.g. Experience / Education / Skills):
+- The candidate's name and contact line: plain text, no prefix.
+- Each section header on its own line, prefixed with "## " (e.g. "## Experience").
+- Each bullet point (job duties, skills, etc.) on its own line, prefixed with "- ".
+- No other markdown -- no asterisks, no numbered lists.
+
+Cover letter formatting: normal prose, 3-4 short paragraphs separated by a blank line, no headers or bullets.`
 
     const userMessage = `Candidate's desired role: ${desiredRole || 'not specified'}
 Company they're applying to: ${companyName}
 ${about ? `About the company: ${about}\n` : ''}
-Candidate's current resume (verbatim):
+Candidate's current resume (verbatim, including its section headers and structure):
 """
 ${resumeText || '(no resume text available)'}
 """
 
 Produce two things, each separated by the exact line "=====":
-1. The candidate's resume, rewritten to emphasize the qualities and experience most relevant to this company and role -- same facts, re-emphasized and re-ordered, nothing invented.
+1. The candidate's resume, rewritten to emphasize the qualities and experience most relevant to this company and role, using the formatting rules above -- same facts and same overall section structure as the original, re-emphasized and re-ordered within each section, nothing invented.
 2. A cover letter (3-4 short paragraphs) for this company and role, based only on the resume above.`
 
     const combined = await callClaude(apiKey, resumeAndCoverSystem, userMessage)
