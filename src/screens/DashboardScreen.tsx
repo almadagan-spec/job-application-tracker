@@ -248,6 +248,15 @@ export default function DashboardScreen() {
                             <div className="jat-cell-failed-message">{app.verification_note}</div>
                             <button
                               className="jat-link-btn"
+                              onClick={() =>
+                                startVerification(app, profile?.desired_role ?? null, profile?.resume_text ?? null)
+                              }
+                            >
+                              Retry
+                            </button>
+                            {' · '}
+                            <button
+                              className="jat-link-btn"
                               onClick={() => {
                                 setEditingId(app.id)
                                 setEditingName(app.company_name)
