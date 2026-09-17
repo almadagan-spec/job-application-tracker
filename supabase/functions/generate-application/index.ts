@@ -90,7 +90,10 @@ Within the SIDEBAR and MAIN parts, keep the SAME section names and order as the 
 - plain lines for anything else (e.g. a contact detail, a skills list)
 Do not use any other markdown (no asterisks, no numbered lists).
 
-Cover letter formatting: normal prose, 3-4 short paragraphs separated by a blank line, no headers or bullets, no %% markup.`
+Cover letter formatting:
+- First line: "Hello," on its own.
+- Then 3-4 short paragraphs of normal prose, separated by a blank line, no headers or bullets, no %% markup.
+- Last two lines: "Best regards," then the candidate's full name on the line after it.`
 
     const userMessage = `Candidate's desired role: ${desiredRole || 'not specified'}
 Company they're applying to: ${companyName}

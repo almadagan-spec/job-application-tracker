@@ -24,6 +24,15 @@ const NO_BORDERS = {
   insideVertical: NO_BORDER,
 }
 
+// Fixed widths in twips (1/1440 inch), not percentages -- some Word
+// readers (Pages included) mis-render percentage-width table columns as
+// nearly zero width, wrapping every line one letter at a time.
+const PAGE_MARGIN = 720 // 0.5in
+const PAGE_WIDTH = 12240 // US Letter
+const CONTENT_WIDTH = PAGE_WIDTH - PAGE_MARGIN * 2
+const SIDEBAR_WIDTH = Math.round(CONTENT_WIDTH * 0.33)
+const MAIN_WIDTH = CONTENT_WIDTH - SIDEBAR_WIDTH
+
 // Turns "## Section" / "- bullet" style plain text into real Word headings
 // and bullet points.
 function renderLine(line: string): Paragraph {
@@ -118,13 +127,14 @@ export async function downloadResumeAsWord(text: string, fileName: string) {
   if (parsed.name) {
     children.push(
       new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
+        width: { size: CONTENT_WIDTH, type: WidthType.DXA },
+        columnWidths: [CONTENT_WIDTH],
         borders: NO_BORDERS,
         rows: [
           new TableRow({
             children: [
               new TableCell({
-                width: { size: 100, type: WidthType.PERCENTAGE },
+                width: { size: CONTENT_WIDTH, type: WidthType.DXA },
                 shading: { fill: ACCENT },
                 margins: { top: 240, bottom: 240, left: 240, right: 240 },
                 children: [
@@ -153,19 +163,20 @@ export async function downloadResumeAsWord(text: string, fileName: string) {
   if (hasColumns) {
     children.push(
       new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
+        width: { size: CONTENT_WIDTH, type: WidthType.DXA },
+        columnWidths: [SIDEBAR_WIDTH, MAIN_WIDTH],
         borders: NO_BORDERS,
         rows: [
           new TableRow({
             children: [
               new TableCell({
-                width: { size: 33, type: WidthType.PERCENTAGE },
+                width: { size: SIDEBAR_WIDTH, type: WidthType.DXA },
                 shading: { fill: SIDEBAR_BG },
                 margins: { top: 200, bottom: 200, left: 200, right: 200 },
                 children: parsed.sidebar.map(renderLine),
               }),
               new TableCell({
-                width: { size: 67, type: WidthType.PERCENTAGE },
+                width: { size: MAIN_WIDTH, type: WidthType.DXA },
                 margins: { top: 200, bottom: 200, left: 240, right: 120 },
                 children: parsed.main.map(renderLine),
               }),
@@ -181,7 +192,16 @@ export async function downloadResumeAsWord(text: string, fileName: string) {
     children.push(...flat.map(renderLine))
   }
 
-  const doc = new Document({ sections: [{ children }] })
+  const doc = new Document({
+    sections: [
+      {
+        properties: {
+          page: { margin: { top: PAGE_MARGIN, bottom: PAGE_MARGIN, left: PAGE_MARGIN, right: PAGE_MARGIN } },
+        },
+        children,
+      },
+    ],
+  })
   await saveDocx(doc, fileName)
 }
 
