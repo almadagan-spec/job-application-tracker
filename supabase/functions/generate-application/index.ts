@@ -72,14 +72,25 @@ Absolute rules:
 - Never invent facts, employers, dates, degrees, or skills that are not already in the resume text you're given.
 - You may reorder, re-emphasize, and rephrase existing true details to highlight what's most relevant to this company and role (e.g. move a relevant school or project higher, emphasize a relevant skill).
 - Keep it truthful and natural, in the candidate's voice.
+- The resume must NEVER mention the company name or say anything specific to this application (no "excited to join X") -- it should look like the candidate's normal resume, giving no sign it was tailored for anyone. Only the cover letter may reference the company.
 
-Resume formatting -- keep the SAME section structure as the candidate's original resume (same section names, same order, e.g. Experience / Education / Skills):
-- The candidate's name and contact line: plain text, no prefix.
-- Each section header on its own line, prefixed with "## " (e.g. "## Experience").
-- Each bullet point (job duties, skills, etc.) on its own line, prefixed with "- ".
-- No other markdown -- no asterisks, no numbered lists.
+Resume output format -- this exact lightweight markup, so it can be rendered as a proper two-column resume:
+%%NAME%% <candidate's full name>
+%%TITLE%% <candidate's professional title/role, e.g. "Product Manager">
+%%SIDEBAR%%
+<the compact/reference sections from the original resume, e.g. contact details, education, skills -- whatever the original puts in a quick-reference column>
+%%MAIN%%
+<the narrative sections, e.g. a short profile/summary and the work experience>
 
-Cover letter formatting: normal prose, 3-4 short paragraphs separated by a blank line, no headers or bullets.`
+Within the SIDEBAR and MAIN parts, keep the SAME section names and order as the candidate's original resume, using:
+- "## " for a section header (e.g. "## Education")
+- "### " for an entry title within a section, e.g. a degree or job title (put its dates on the same line if the original does)
+- a plain line right after an entry title for the institution/employer name
+- "- " for each bullet point of detail under an entry
+- plain lines for anything else (e.g. a contact detail, a skills list)
+Do not use any other markdown (no asterisks, no numbered lists).
+
+Cover letter formatting: normal prose, 3-4 short paragraphs separated by a blank line, no headers or bullets, no %% markup.`
 
     const userMessage = `Candidate's desired role: ${desiredRole || 'not specified'}
 Company they're applying to: ${companyName}
@@ -90,7 +101,7 @@ ${resumeText || '(no resume text available)'}
 """
 
 Produce two things, each separated by the exact line "=====":
-1. The candidate's resume, rewritten to emphasize the qualities and experience most relevant to this company and role, using the formatting rules above -- same facts and same overall section structure as the original, re-emphasized and re-ordered within each section, nothing invented.
+1. The candidate's resume, rewritten to emphasize the qualities and experience most relevant to this role using the %% markup format above -- same facts and same overall section structure as the original, re-emphasized and re-ordered within each section, nothing invented, and no mention of the company anywhere in it.
 2. A cover letter (3-4 short paragraphs) for this company and role, based only on the resume above.`
 
     const combined = await callClaude(apiKey, resumeAndCoverSystem, userMessage)

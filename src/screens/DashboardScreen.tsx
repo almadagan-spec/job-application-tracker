@@ -17,7 +17,7 @@ import type { Application, ApplicationStatus, Profile } from '../types'
 import DesiredRoleModal from '../components/DesiredRoleModal'
 import AddCompanyModal from '../components/AddCompanyModal'
 import StatusDropdown from '../components/StatusDropdown'
-import { downloadAsWord } from '../lib/docExport'
+import { downloadAsWord, downloadResumeAsWord } from '../lib/docExport'
 import './DashboardScreen.css'
 
 export default function DashboardScreen() {
@@ -277,7 +277,7 @@ export default function DashboardScreen() {
                     {app.new_resume && (
                       <button
                         className="jat-link-btn"
-                        onClick={() => downloadAsWord(`Resume — ${app.company_name}`, app.new_resume!, `resume-${slug(app.company_name)}`)}
+                        onClick={() => downloadResumeAsWord(app.new_resume!, `resume-${slug(app.company_name)}`)}
                       >
                         Download
                       </button>
@@ -347,7 +347,9 @@ export default function DashboardScreen() {
 function truncate(text: string, max = 120): string {
   const clean = text
     .split('\n')
-    .map((line) => line.trim().replace(/^##\s+/, '').replace(/^[-•]\s+/, '• '))
+    .map((line) => line.trim())
+    .filter((line) => !/^%%[A-Z]+%%/.test(line))
+    .map((line) => line.replace(/^#{2,3}\s+/, '').replace(/^[-•]\s+/, '• '))
     .join(' ')
     .trim()
   return clean.length > max ? `${clean.slice(0, max)}…` : clean
