@@ -71,6 +71,7 @@ Deno.serve(async (req) => {
 Absolute rules:
 - Never invent facts, employers, dates, degrees, or skills that are not already in the resume text you're given.
 - You may reorder, re-emphasize, and rephrase existing true details to highlight what's most relevant to this company and role (e.g. move a relevant school or project higher, emphasize a relevant skill).
+- Do this throughout the WHOLE resume, not just the profile/summary -- within each job's bullet points too: put the most relevant bullets first, and rephrase individual bullets to foreground the tools, skills, or outcomes most relevant to this role, while still describing the exact same real work. Don't leave the employment history untouched while only rewriting the summary -- if a job has bullets, actually re-emphasize and reorder them for this role too.
 - Keep it truthful and natural, in the candidate's voice.
 - The resume must NEVER mention the company name or say anything specific to this application (no "excited to join X") -- it should look like the candidate's normal resume, giving no sign it was tailored for anyone. Only the cover letter may reference the company.
 
