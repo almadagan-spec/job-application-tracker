@@ -205,19 +205,25 @@ export default function DashboardScreen() {
           </button>
           {profile?.desired_role && <span className="jat-toolbar-note">"{profile.desired_role}"</span>}
         </div>
-
-        <div className="jat-toolbar-item">
-          <button className="jat-btn" onClick={() => setShowCompanyModal(true)}>
-            + Add a company
-          </button>
-        </div>
       </div>
 
       <div className="jat-table-wrap">
         <table className="jat-table">
           <thead>
             <tr>
-              <th>Company name</th>
+              <th>
+                <span className="jat-th-with-add">
+                  Company name
+                  <button
+                    className="jat-add-company-btn"
+                    onClick={() => setShowCompanyModal(true)}
+                    aria-label="Add a company"
+                    title="Add a company"
+                  >
+                    +
+                  </button>
+                </span>
+              </th>
               <th>About</th>
               <th>New resume</th>
               <th>Cover letter</th>
@@ -229,9 +235,12 @@ export default function DashboardScreen() {
           <tbody>
             {applications.length === 0 && (
               <tr>
-                <td colSpan={7} className="jat-empty-row">
-                  No companies yet — click "+ Add a company" to get started.
+                <td>
+                  <button className="jat-btn jat-add-company-cta" onClick={() => setShowCompanyModal(true)}>
+                    + Add a company
+                  </button>
                 </td>
+                <td colSpan={6} />
               </tr>
             )}
             {applications.map((app) => {

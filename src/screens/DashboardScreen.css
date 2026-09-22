@@ -91,14 +91,39 @@
   border-bottom: none;
 }
 
-.jat-empty-row {
-  text-align: center;
-  color: var(--muted);
-  padding: 32px 16px;
-}
-
 .jat-company-name {
   font-weight: 600;
+}
+
+.jat-th-with-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.jat-add-company-btn {
+  width: 18px;
+  height: 18px;
+  line-height: 1;
+  border: none;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.jat-add-company-btn:hover {
+  background: var(--primary-dark);
+}
+
+.jat-add-company-cta {
+  padding: 16px 28px;
+  font-size: 15px;
 }
 
 .jat-cell-failed {
