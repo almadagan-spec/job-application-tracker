@@ -300,8 +300,7 @@ export default function DashboardScreen() {
                     <div className="jat-cell-text">{app.about || (verifying ? '…' : '—')}</div>
                   </td>
                   <td>
-                    <div className="jat-cell-text">{app.new_resume ? truncate(app.new_resume) : verifying ? '…' : '—'}</div>
-                    {app.new_resume && (
+                    {app.new_resume ? (
                       <div className="jat-cell-actions">
                         <button
                           className="jat-link-btn"
@@ -316,11 +315,12 @@ export default function DashboardScreen() {
                           Download
                         </button>
                       </div>
+                    ) : (
+                      <div className="jat-cell-text">{verifying ? '…' : '—'}</div>
                     )}
                   </td>
                   <td>
-                    <div className="jat-cell-text">{app.cover_letter ? truncate(app.cover_letter) : verifying ? '…' : '—'}</div>
-                    {app.cover_letter && (
+                    {app.cover_letter ? (
                       <div className="jat-cell-actions">
                         <button
                           className="jat-link-btn"
@@ -337,6 +337,8 @@ export default function DashboardScreen() {
                           Download
                         </button>
                       </div>
+                    ) : (
+                      <div className="jat-cell-text">{verifying ? '…' : '—'}</div>
                     )}
                   </td>
                   <td>
@@ -403,17 +405,6 @@ export default function DashboardScreen() {
         })()}
     </div>
   )
-}
-
-function truncate(text: string, max = 120): string {
-  const clean = text
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => !/^%%[A-Z]+%%/.test(line))
-    .map((line) => line.replace(/^#{2,3}\s+/, '').replace(/^[-•]\s+/, '• '))
-    .join(' ')
-    .trim()
-  return clean.length > max ? `${clean.slice(0, max)}…` : clean
 }
 
 function slug(text: string): string {

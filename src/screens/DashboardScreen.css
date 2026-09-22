@@ -78,24 +78,24 @@
 
 .jat-table th:nth-child(2),
 .jat-table td:nth-child(2) {
-  width: 32%;
+  width: 30%;
 }
 
 .jat-table th:nth-child(3),
 .jat-table td:nth-child(3),
 .jat-table th:nth-child(4),
 .jat-table td:nth-child(4) {
-  width: 14%;
+  width: 13%;
 }
 
 .jat-table th:nth-child(5),
 .jat-table td:nth-child(5) {
-  width: 13%;
+  width: 12%;
 }
 
 .jat-table th:nth-child(6),
 .jat-table td:nth-child(6) {
-  width: 9%;
+  width: 12%;
 }
 
 .jat-table th:nth-child(7),
