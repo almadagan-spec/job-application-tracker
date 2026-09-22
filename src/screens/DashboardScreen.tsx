@@ -255,6 +255,9 @@ export default function DashboardScreen() {
                           type="text"
                           value={editingName}
                           onChange={(e) => setEditingName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleRetry(app)
+                          }}
                           autoFocus
                         />
                         <button className="jat-btn" onClick={() => handleRetry(app)}>

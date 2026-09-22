@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import Modal from './Modal'
 
 interface AddCompanyModalProps {
@@ -11,7 +11,8 @@ export default function AddCompanyModal({ onClose, onAdd }: AddCompanyModalProps
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleAdd() {
+  async function handleAdd(e: FormEvent) {
+    e.preventDefault()
     if (!name.trim()) {
       setError('Please enter a company name.')
       return
@@ -30,21 +31,23 @@ export default function AddCompanyModal({ onClose, onAdd }: AddCompanyModalProps
 
   return (
     <Modal title="Add a company" onClose={onClose}>
-      <p style={{ margin: 0, fontSize: 13, color: 'var(--muted)' }}>
-        Type the company's name. We'll check that it's a real company before adding
-        it to your table.
-      </p>
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="e.g. Figma"
-        autoFocus
-      />
-      {error && <p className="jat-error">{error}</p>}
-      <button className="jat-btn" onClick={handleAdd} disabled={submitting}>
-        {submitting ? 'Checking…' : 'Add company'}
-      </button>
+      <form onSubmit={handleAdd} style={{ display: 'contents' }}>
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--muted)' }}>
+          Type the company's name. We'll check that it's a real company before adding
+          it to your table.
+        </p>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Figma"
+          autoFocus
+        />
+        {error && <p className="jat-error">{error}</p>}
+        <button type="submit" className="jat-btn" disabled={submitting}>
+          {submitting ? 'Checking…' : 'Add company'}
+        </button>
+      </form>
     </Modal>
   )
 }
