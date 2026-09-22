@@ -22,13 +22,13 @@ export default function StatusDropdown({ value, onChange, disabled }: StatusDrop
         color: isDark ? '#ffffff' : '#1f2430',
         border: 'none',
         borderRadius: 6,
-        padding: '4px 6px',
+        padding: '6px 8px',
         fontWeight: 600,
-        fontSize: 11,
+        fontSize: 12,
         width: '100%',
         maxWidth: '100%',
         boxSizing: 'border-box',
-        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
         cursor: disabled ? 'not-allowed' : 'pointer',
       }}
     >
