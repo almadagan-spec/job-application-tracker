@@ -68,6 +68,39 @@
   width: 100%;
   border-collapse: collapse;
   min-width: 900px;
+  table-layout: fixed;
+}
+
+.jat-table th:nth-child(1),
+.jat-table td:nth-child(1) {
+  width: 12%;
+}
+
+.jat-table th:nth-child(2),
+.jat-table td:nth-child(2) {
+  width: 32%;
+}
+
+.jat-table th:nth-child(3),
+.jat-table td:nth-child(3),
+.jat-table th:nth-child(4),
+.jat-table td:nth-child(4) {
+  width: 14%;
+}
+
+.jat-table th:nth-child(5),
+.jat-table td:nth-child(5) {
+  width: 13%;
+}
+
+.jat-table th:nth-child(6),
+.jat-table td:nth-child(6) {
+  width: 9%;
+}
+
+.jat-table th:nth-child(7),
+.jat-table td:nth-child(7) {
+  width: 36px;
 }
 
 .jat-table th {
@@ -102,19 +135,20 @@
 }
 
 .jat-add-company-btn {
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
   line-height: 1;
   border: none;
   border-radius: 50%;
   background: var(--primary);
   color: white;
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .jat-add-company-btn:hover {
@@ -163,13 +197,13 @@
 }
 
 .jat-cell-text {
-  max-width: 260px;
   white-space: pre-wrap;
+  overflow-wrap: break-word;
   color: var(--text);
 }
 
 .jat-notes-input {
-  width: 160px;
+  width: 100%;
   min-height: 60px;
   padding: 6px 8px;
   border-radius: 6px;
