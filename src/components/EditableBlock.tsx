@@ -6,17 +6,20 @@ interface EditableBlockProps {
   className?: string
   style?: CSSProperties
   placeholder?: string
+  autoFocus?: boolean
 }
 
-// A contentEditable region that's seeded with HTML once (so it can show the
-// red diff-highlighting on load) and then left alone by React -- writing to
-// it on every keystroke would fight the user's cursor and the highlighting
-// with it. Plain text is read back out via onInput.
-export default function EditableBlock({ initialHtml, onChange, className, style, placeholder }: EditableBlockProps) {
+// A contentEditable region that's seeded with HTML once (so it can show
+// diff-highlighting on load) and then left alone by React -- writing to it
+// on every keystroke would fight the user's cursor. Plain text is read back
+// out via onInput.
+export default function EditableBlock({ initialHtml, onChange, className, style, placeholder, autoFocus }: EditableBlockProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (ref.current) ref.current.innerHTML = initialHtml || ''
+    if (!ref.current) return
+    ref.current.innerHTML = initialHtml || ''
+    if (autoFocus) ref.current.focus()
   }, [])
 
   return (

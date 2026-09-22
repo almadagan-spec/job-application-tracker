@@ -50,7 +50,19 @@
   width: 10px;
   height: 10px;
   border-radius: 2px;
-  background: #ef4444;
+  margin-left: 4px;
+}
+
+.jat-diff-swatch:first-of-type {
+  margin-left: 0;
+}
+
+.jat-diff-swatch-added {
+  background: #16a34a;
+}
+
+.jat-diff-swatch-removed {
+  background: #dc2626;
 }
 
 .jat-editor-actions {
@@ -187,6 +199,19 @@
   margin: 2px 0;
 }
 
+.jat-doc-clickable {
+  cursor: text;
+}
+
+.jat-doc-clickable:hover {
+  background: #f5f7fb;
+}
+
 .jat-diff-added {
+  color: #16a34a;
+}
+
+.jat-diff-removed {
   color: #dc2626;
+  text-decoration: line-through;
 }
