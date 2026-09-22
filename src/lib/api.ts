@@ -161,6 +161,18 @@ export async function deleteApplication(applicationId: string): Promise<void> {
   if (error) throw error
 }
 
+export async function updateNewResume(applicationId: string, newResume: string): Promise<void> {
+  const sb = requireClient()
+  const { error } = await sb.from('applications').update({ new_resume: newResume }).eq('id', applicationId)
+  if (error) throw error
+}
+
+export async function updateCoverLetter(applicationId: string, coverLetter: string): Promise<void> {
+  const sb = requireClient()
+  const { error } = await sb.from('applications').update({ cover_letter: coverLetter }).eq('id', applicationId)
+  if (error) throw error
+}
+
 // A row that was added but never got a result -- e.g. the page was closed or
 // refreshed while the check was still running, and nothing ever wrote back.
 export function needsVerification(app: Application): boolean {

@@ -8,7 +8,9 @@ import {
   needsVerification,
   renameCompanyRow,
   runVerificationAndGeneration,
+  updateCoverLetter,
   updateDesiredRole,
+  updateNewResume,
   updateNotes,
   updateStatus,
   uploadResume,
@@ -17,6 +19,7 @@ import type { Application, ApplicationStatus, Profile } from '../types'
 import DesiredRoleModal from '../components/DesiredRoleModal'
 import AddCompanyModal from '../components/AddCompanyModal'
 import StatusDropdown from '../components/StatusDropdown'
+import DocumentEditor from '../components/DocumentEditor'
 import { downloadAsWord, downloadResumeAsWord } from '../lib/docExport'
 import './DashboardScreen.css'
 
@@ -37,6 +40,8 @@ export default function DashboardScreen() {
   const [verifyingIds, setVerifyingIds] = useState<Set<string>>(new Set())
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
+
+  const [editingDoc, setEditingDoc] = useState<{ applicationId: string; docType: 'resume' | 'cover' } | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -142,6 +147,16 @@ export default function DashboardScreen() {
 
   async function handleNotesSave(applicationId: string, notes: string) {
     await updateNotes(applicationId, notes)
+  }
+
+  async function handleSaveDoc(applicationId: string, docType: 'resume' | 'cover', text: string) {
+    if (docType === 'resume') {
+      await updateNewResume(applicationId, text)
+      setApplications((prev) => prev.map((a) => (a.id === applicationId ? { ...a, new_resume: text } : a)))
+    } else {
+      await updateCoverLetter(applicationId, text)
+      setApplications((prev) => prev.map((a) => (a.id === applicationId ? { ...a, cover_letter: text } : a)))
+    }
   }
 
   if (loading) {
@@ -275,25 +290,41 @@ export default function DashboardScreen() {
                   <td>
                     <div className="jat-cell-text">{app.new_resume ? truncate(app.new_resume) : verifying ? '…' : '—'}</div>
                     {app.new_resume && (
-                      <button
-                        className="jat-link-btn"
-                        onClick={() => downloadResumeAsWord(app.new_resume!, `resume-${slug(app.company_name)}`)}
-                      >
-                        Download
-                      </button>
+                      <div className="jat-cell-actions">
+                        <button
+                          className="jat-link-btn"
+                          onClick={() => setEditingDoc({ applicationId: app.id, docType: 'resume' })}
+                        >
+                          Preview and edit
+                        </button>
+                        <button
+                          className="jat-link-btn"
+                          onClick={() => downloadResumeAsWord(app.new_resume!, `resume-${slug(app.company_name)}`)}
+                        >
+                          Download
+                        </button>
+                      </div>
                     )}
                   </td>
                   <td>
                     <div className="jat-cell-text">{app.cover_letter ? truncate(app.cover_letter) : verifying ? '…' : '—'}</div>
                     {app.cover_letter && (
-                      <button
-                        className="jat-link-btn"
-                        onClick={() =>
-                          downloadAsWord(`Cover letter — ${app.company_name}`, app.cover_letter!, `cover-letter-${slug(app.company_name)}`)
-                        }
-                      >
-                        Download
-                      </button>
+                      <div className="jat-cell-actions">
+                        <button
+                          className="jat-link-btn"
+                          onClick={() => setEditingDoc({ applicationId: app.id, docType: 'cover' })}
+                        >
+                          Preview and edit
+                        </button>
+                        <button
+                          className="jat-link-btn"
+                          onClick={() =>
+                            downloadAsWord(`Cover letter — ${app.company_name}`, app.cover_letter!, `cover-letter-${slug(app.company_name)}`)
+                          }
+                        >
+                          Download
+                        </button>
+                      </div>
                     )}
                   </td>
                   <td>
@@ -340,6 +371,24 @@ export default function DashboardScreen() {
       {showCompanyModal && (
         <AddCompanyModal onClose={() => setShowCompanyModal(false)} onAdd={handleAddCompany} />
       )}
+
+      {editingDoc &&
+        (() => {
+          const app = applications.find((a) => a.id === editingDoc.applicationId)
+          if (!app) return null
+          const text = editingDoc.docType === 'resume' ? app.new_resume : app.cover_letter
+          if (!text) return null
+          return (
+            <DocumentEditor
+              docType={editingDoc.docType}
+              companyName={app.company_name}
+              initialText={text}
+              originalResumeText={profile?.resume_text ?? null}
+              onClose={() => setEditingDoc(null)}
+              onSave={(newText) => handleSaveDoc(app.id, editingDoc.docType, newText)}
+            />
+          )
+        })()}
     </div>
   )
 }

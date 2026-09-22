@@ -10,6 +10,7 @@ import {
   TextRun,
   WidthType,
 } from 'docx'
+import { parseResumeMarkup, type ResumeBlock } from './resumeFormat'
 
 const FONT = 'Calibri'
 const ACCENT = '2F6FED'
@@ -48,36 +49,33 @@ function docStyles() {
   }
 }
 
-// Turns "## Section" / "### Entry" / "- bullet" style plain text into real
-// Word paragraphs, keeping the original's blue section headers and the
-// relative size differences between a section header, an entry title
-// (a job/degree), and body text.
-function renderLine(line: string): Paragraph {
-  if (line.startsWith('## ')) {
+// Turns a parsed resume block into a real Word paragraph, keeping the
+// original's blue section headers and the relative size differences
+// between a section header, an entry title (a job/degree), and body text.
+function renderBlock(block: ResumeBlock): Paragraph {
+  if (block.type === 'header') {
     return new Paragraph({
       spacing: { before: 220, after: 80 },
       border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'D5DBE8', space: 2 } },
-      children: [
-        new TextRun({ text: line.slice(3).trim(), bold: true, size: SIZE.sectionHeader, color: ACCENT, font: FONT }),
-      ],
+      children: [new TextRun({ text: block.text, bold: true, size: SIZE.sectionHeader, color: ACCENT, font: FONT })],
     })
   }
-  if (line.startsWith('### ')) {
+  if (block.type === 'entry') {
     return new Paragraph({
       spacing: { before: 140, after: 30 },
-      children: [new TextRun({ text: line.slice(4).trim(), bold: true, size: SIZE.entryTitle, color: TEXT_COLOR, font: FONT })],
+      children: [new TextRun({ text: block.text, bold: true, size: SIZE.entryTitle, color: TEXT_COLOR, font: FONT })],
     })
   }
-  if (line.startsWith('- ') || line.startsWith('• ')) {
+  if (block.type === 'bullet') {
     return new Paragraph({
       bullet: { level: 0 },
       spacing: { after: 40 },
-      children: [new TextRun({ text: line.slice(2).trim(), size: SIZE.body, color: TEXT_COLOR, font: FONT })],
+      children: [new TextRun({ text: block.text, size: SIZE.body, color: TEXT_COLOR, font: FONT })],
     })
   }
   return new Paragraph({
     spacing: { after: 50 },
-    children: [new TextRun({ text: line, size: SIZE.body, color: TEXT_COLOR, font: FONT })],
+    children: [new TextRun({ text: block.text, size: SIZE.body, color: TEXT_COLOR, font: FONT })],
   })
 }
 
@@ -113,50 +111,12 @@ export async function downloadAsWord(title: string, text: string, fileName: stri
   await saveDocx(doc, fileName)
 }
 
-interface ParsedResume {
-  name: string
-  title: string
-  sidebar: string[]
-  main: string[]
-}
-
-function parseResume(text: string): ParsedResume {
-  const lines = text
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean)
-
-  let name = ''
-  let title = ''
-  const sidebar: string[] = []
-  const main: string[] = []
-  let target: 'sidebar' | 'main' | null = null
-
-  for (const line of lines) {
-    if (line.startsWith('%%NAME%%')) {
-      name = line.slice(8).trim()
-    } else if (line.startsWith('%%TITLE%%')) {
-      title = line.slice(9).trim()
-    } else if (line.startsWith('%%SIDEBAR%%')) {
-      target = 'sidebar'
-    } else if (line.startsWith('%%MAIN%%')) {
-      target = 'main'
-    } else if (target === 'sidebar') {
-      sidebar.push(line)
-    } else if (target === 'main' || target === null) {
-      main.push(line)
-    }
-  }
-
-  return { name, title, sidebar, main }
-}
-
 // Builds the tailored resume as a two-column .docx (a colored header banner,
 // a narrower sidebar for contact/education/skills, and a wider main column
 // for the profile and work history) -- deliberately without the company's
 // name anywhere in it, so the file itself doesn't reveal it was tailored.
 export async function downloadResumeAsWord(text: string, fileName: string) {
-  const parsed = parseResume(text)
+  const parsed = parseResumeMarkup(text)
   const hasColumns = parsed.sidebar.length > 0 && parsed.main.length > 0
 
   const children: (Table | Paragraph)[] = []
@@ -210,12 +170,12 @@ export async function downloadResumeAsWord(text: string, fileName: string) {
                 width: { size: SIDEBAR_WIDTH, type: WidthType.DXA },
                 shading: { fill: SIDEBAR_BG },
                 margins: { top: 140, bottom: 140, left: 160, right: 160 },
-                children: parsed.sidebar.map(renderLine),
+                children: parsed.sidebar.map(renderBlock),
               }),
               new TableCell({
                 width: { size: MAIN_WIDTH, type: WidthType.DXA },
                 margins: { top: 140, bottom: 140, left: 180, right: 100 },
-                children: parsed.main.map(renderLine),
+                children: parsed.main.map(renderBlock),
               }),
             ],
           }),
@@ -225,8 +185,8 @@ export async function downloadResumeAsWord(text: string, fileName: string) {
   } else {
     // The AI didn't tag sidebar/main sections -- fall back to one column
     // rather than showing a blank document.
-    const flat = parsed.main.length > 0 ? parsed.main : text.split('\n').map((l) => l.trim()).filter(Boolean)
-    children.push(...flat.map(renderLine))
+    const flat = parsed.main.length > 0 ? parsed.main : text.split('\n').map((l) => ({ type: 'plain' as const, text: l.trim() })).filter((b) => b.text)
+    children.push(...flat.map(renderBlock))
   }
 
   const doc = new Document({
