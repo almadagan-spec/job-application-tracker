@@ -86,6 +86,44 @@ export async function renameCompanyRow(application: Application, newCompanyName:
   return data
 }
 
+// Calls the AI writer and saves the result as a verified row. Shared by the
+// normal verify-then-generate flow and the manual "Add anyway" override.
+async function generateAndSave(
+  application: Application,
+  desiredRole: string | null,
+  resumeText: string | null,
+  about: string,
+): Promise<Application> {
+  const sb = requireClient()
+
+  const { data: genData, error: genError } = await sb.functions.invoke('generate-application', {
+    body: {
+      companyName: application.company_name,
+      desiredRole: desiredRole ?? '',
+      resumeText: resumeText ?? '',
+      about,
+    },
+  })
+  if (genError) throw genError
+
+  const gen = genData as { newResume?: string; coverLetter?: string }
+
+  const { data, error } = await sb
+    .from('applications')
+    .update({
+      linkedin_verified: true,
+      verification_note: null,
+      about,
+      new_resume: gen.newResume ?? '',
+      cover_letter: gen.coverLetter ?? '',
+    })
+    .eq('id', application.id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
 export async function runVerificationAndGeneration(
   application: Application,
   desiredRole: string | null,
@@ -115,32 +153,17 @@ export async function runVerificationAndGeneration(
     return data
   }
 
-  const { data: genData, error: genError } = await sb.functions.invoke('generate-application', {
-    body: {
-      companyName: application.company_name,
-      desiredRole: desiredRole ?? '',
-      resumeText: resumeText ?? '',
-      about,
-    },
-  })
-  if (genError) throw genError
+  return generateAndSave(application, desiredRole, resumeText, about)
+}
 
-  const gen = genData as { newResume?: string; coverLetter?: string }
-
-  const { data, error } = await sb
-    .from('applications')
-    .update({
-      linkedin_verified: true,
-      verification_note: null,
-      about,
-      new_resume: gen.newResume ?? '',
-      cover_letter: gen.coverLetter ?? '',
-    })
-    .eq('id', application.id)
-    .select()
-    .single()
-  if (error) throw error
-  return data
+// Lets the user force a company through when they're sure it's real but the
+// AI's own-knowledge check couldn't confirm it (e.g. a small or very new company).
+export async function overrideAsVerified(
+  application: Application,
+  desiredRole: string | null,
+  resumeText: string | null,
+): Promise<Application> {
+  return generateAndSave(application, desiredRole, resumeText, '')
 }
 
 export async function updateStatus(applicationId: string, status: ApplicationStatus): Promise<void> {

@@ -49,8 +49,10 @@ Deno.serve(async (req) => {
         max_tokens: 500,
         thinking: { type: 'disabled' },
         system:
-          'You judge whether a name refers to a real, existing company (of any size, including startups) based on your knowledge. ' +
-          'Reply with ONLY a JSON object, no other text: {"found": true or false, "about": "two-sentence plain-text summary of what the company does, or empty string if not found"}.',
+          'You judge whether a name refers to a real, existing company -- of any size, including small or recently founded startups that are not widely known. ' +
+          'Lean toward {"found": true} whenever the name is plausible as a real company and you have any recollection, even partial or uncertain, that it could be real. ' +
+          'Only answer {"found": false} if the name is clearly fictional, a placeholder (like "Test Inc" or "asdf"), or gibberish -- not simply because you are unsure or it is obscure. ' +
+          'Reply with ONLY a JSON object, no other text: {"found": true or false, "about": "two-sentence plain-text summary of what the company does (your best guess from the name and any partial knowledge if you are not fully sure), or empty string only if found is false"}.',
         messages: [{ role: 'user', content: `Company name: "${companyName}"` }],
       }),
     })

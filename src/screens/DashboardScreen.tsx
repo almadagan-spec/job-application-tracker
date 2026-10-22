@@ -6,6 +6,7 @@ import {
   fetchProfile,
   insertCompanyRow,
   needsVerification,
+  overrideAsVerified,
   renameCompanyRow,
   runVerificationAndGeneration,
   updateCoverLetter,
@@ -128,6 +129,28 @@ export default function DashboardScreen() {
     setApplications((prev) => prev.map((a) => (a.id === renamed.id ? renamed : a)))
     setEditingId(null)
     startVerification(renamed, profile?.desired_role ?? null, profile?.resume_text ?? null)
+  }
+
+  async function handleOverride(application: Application) {
+    markVerifying(application.id, true)
+    try {
+      const updated = await overrideAsVerified(
+        application,
+        profile?.desired_role ?? null,
+        profile?.resume_text ?? null,
+      )
+      setApplications((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
+    } catch (err) {
+      setApplications((prev) =>
+        prev.map((a) =>
+          a.id === application.id
+            ? { ...a, verification_note: err instanceof Error ? err.message : 'Something went wrong.' }
+            : a,
+        ),
+      )
+    } finally {
+      markVerifying(application.id, false)
+    }
   }
 
   async function handleDelete(applicationId: string) {
@@ -290,6 +313,10 @@ export default function DashboardScreen() {
                               }}
                             >
                               Edit company name
+                            </button>
+                            {' · '}
+                            <button className="jat-link-btn" onClick={() => handleOverride(app)}>
+                              Add anyway
                             </button>
                           </>
                         )}
